@@ -22,11 +22,23 @@ leader = False
 node: Node = Node(nodeId=int(nodeId), ip=ip, port=port)
 
 open_nodes = {}
-all_ip = {'127.0.0.1:50051':1,'127.0.0.1:50052':2,'127.0.0.1:50053':3}
+all_ip = {'127.0.0.1:50051':1,'127.0.0.1:50052':2,'127.0.0.1:50053':3,'127.0.0.1:50054':4}
+
+def reWrite():
+    node_ip = ip+":"+port
+    node_id = nodeId
+    f= open("nodes.txt", "r")
+    lines = f.readlines()
+    lines = [line for line in lines if line.strip() != f"{node_ip} {node_id}"]
+    f.close()
+    f=open("nodes.txt", "w")
+    f.writelines(lines)
+
+    sys.exit(0)
 
 def NodeDetector():
     try:
-        time.sleep(4)
+        # time.sleep(4)
 
         while True:
             ip_exist = []
@@ -46,6 +58,7 @@ def NodeDetector():
                     del open_nodes[v]
 
     except KeyboardInterrupt:
+        reWrite()
         return
 
 
@@ -126,6 +139,7 @@ def sendHeartbeat():
                     #     res = stub.RefreshLease(raft_pb2.LeaseReq(ack=1))
                     #     channel.close()
     except KeyboardInterrupt:
+        reWrite()
         return
 
 
@@ -346,8 +360,8 @@ class RaftServicer(raft_pb2_grpc.RaftServicer):
 
     def ReplicateLogRequest(self, request, context):
         # if(request.term > )
-        if request.heartbeat:
-            node.renew()
+        # if request.heartbeat:
+        #     node.renew()
         # TODO implement this functionality
         if request.currentTerm > node.currentTerm:
             node.currentTerm = request.currentTerm
@@ -431,11 +445,12 @@ def serve():
         f = open("nodes.txt", "a")
         f.write(ip + ":" + port + " " + str(nodeId) + " " + "\n")
         f.close()
-        time.sleep(10)
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=5))
         raft_pb2_grpc.add_RaftServicer_to_server(RaftServicer(), server)
         server.add_insecure_port(f"[::]:{port}")
         server.start()
+        time.sleep(10)
+        
 
         try:
 
@@ -458,15 +473,16 @@ def serve():
 
 
         except KeyboardInterrupt:
+            reWrite()
             pass
         try:
             while True:
                 time.sleep(3600)  # One hour
         except KeyboardInterrupt:
-
+            reWrite()
             server.stop(0)
     except KeyboardInterrupt:
-        pass
+        reWrite()
 
 
 
@@ -492,14 +508,5 @@ if __name__ == '__main__':
             i.join()
 
     except KeyboardInterrupt:
-
-        node_ip = ip+":"+port
-        node_id = nodeId
-        f= open("nodes.txt", "r")
-        lines = f.readlines()
-        lines = [line for line in lines if line.strip() != f"{node_ip} {node_id}"]
-        f.close()
-        f=open("nodes.txt", "w")
-        f.writelines(lines)
-
-        sys.exit(0)
+        reWrite()
+        
