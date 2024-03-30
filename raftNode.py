@@ -24,12 +24,14 @@ class Node:
     lastTerm = 0
     leaderId = -1
     startTime = 0
+    leaseTime = 0
     lastIndex = 0
     timer = 0
     val = False
     data = {}
     leaseDuration = 7
     leaseStartTime = 0
+    leaderLease = 0
 
     def __init__(self, nodeId, ip, port):
         self.nodeId = nodeId
@@ -37,9 +39,6 @@ class Node:
         self.port = port
         self.timer = random.uniform(5, 11)
         self.log = []
-
-
-
 
         if os.path.isdir(f"logs_node_{nodeId}"):
             # take data from log files
@@ -73,10 +72,16 @@ class Node:
     def startTimer(self):
         self.startTime = time.time()
 
+    def startLease(self):
+        self.leaseStartTime = time.time()
+
+    def cancelLease(self):
+        return self.leaderLease
+
     def checkTimeout(self):
         while True:
             if self.cancel() or self.isLeader:
-                self.val=0
+                self.val = 0
                 return False
             if time.time() > self.startTime + self.timer:
                 return True
@@ -86,13 +91,12 @@ class Node:
         #
         # if(len(self.log) > 0):
         #   self.lastTerm = self.log[len(self.log)-1].term
+
     def renew(self):
-        self.val=1
+        self.val = 1
 
     def acquireLease(self):
         self.leaseStartTime = time.time()
-
-
 
     def checkLeaseExpiry(self):
 
@@ -100,12 +104,7 @@ class Node:
 
     def writelog(self):
         for i in self.log:
-            if i.key=="NO-OP":
-                self.f.write(i.key+"\n")
+            if i.key == "NO-OP":
+                self.f.write(i.key + "\n")
             else:
                 self.f.write(f"{i.key} {i.value} {i.term} \n")
-
-
-
-
-

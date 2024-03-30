@@ -16,7 +16,7 @@ from raftNode import Node, NodeList
 port = sys.argv[1]
 nodeId = sys.argv[2]
 ip = socket.gethostbyname(socket.gethostname())
-
+firsteldone = False
 leader = False
 
 node: Node = Node(nodeId=int(nodeId), ip=ip, port=port)
@@ -155,7 +155,7 @@ def StartElection():
     longestLease = 0
     leaseStart = 0
     node.startTimer()
-    print("heya",open_nodes)
+
 
     for j, i in open_nodes.items():
         if i == node.ipAddr + ":" + node.port:
@@ -180,6 +180,7 @@ def StartElection():
         node.acquireLease()
         print(node.votesReceived)
         print("Leader")
+        firsteldone=True
         node.currentRole = "Leader"
         node.currentLeader = node.nodeId
         node.isLeader = True
@@ -213,13 +214,15 @@ def StartElection():
 def SuspectFail():
     time.sleep(4)
     while True:
+        if not firsteldone:
+            continue
         if node.isLeader:
             continue
         if node.cancel():
-
             node.startTimer()
             node.val=0
             continue
+
         if time.time()>node.startTime+node.timer and node.currentTerm>0:
             print("hi")
             node.currentTerm += 1
@@ -287,6 +290,8 @@ class RaftServicer(raft_pb2_grpc.RaftServicer):
             node.votedFor = request.candidateId
             node.val = True
             node.leaderId = request.candidateId
+            global firsteldone
+            firsteldone=True
 
         else:
 
@@ -462,6 +467,7 @@ def serve():
                     node.lastTerm = node.log[len(node.log) - 1].term
                 if not node.cancel():
                     StartElection()
+
 
 
         except KeyboardInterrupt:
