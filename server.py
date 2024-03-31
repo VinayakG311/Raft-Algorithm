@@ -21,7 +21,8 @@ leader = False
 
 node: Node = Node(nodeId=int(nodeId), ip=ip, port=port)
 dumper = open(f"logs_node_{nodeId}/dump.txt","a")
-open_nodes = {1:'127.0.0.1:50051', 2:'127.0.0.1:50052',3:'127.0.0.1:50053', 4:'127.0.0.1:50054'}
+open_nodes = {1: '127.0.0.1:50051', 2: '127.0.0.1:50052', 3: '127.0.0.1:50053', 4: '127.0.0.1:50054'}
+#open_nodes = {1: '10.128.0.3:50051', 2: '10.142.0.2:50052', 3: '10.142.0.3:50053', 4: '10.128.0.8:50054',5:'10.142.0.4:50055'}
 # all_ip = {'127.0.0.1:50051': 1, '127.0.0.1:50052': 2, '127.0.0.1:50053': 3, '127.0.0.1:50054': 4}
 
 
@@ -154,7 +155,8 @@ def ReplicateLogs(req, heartbeat):
 
             # print(res)
     except:
-        dumper.write(f"Error occurred while sending RPC to Node {req[3]}")
+        pass
+
 
 
 def sendHeartbeat():
@@ -222,7 +224,7 @@ def StartElection():
                     if response.voteGranted == True and node.currentRole == "Candidate" and node.currentTerm == response.term:
                         node.votesReceived.append(response.NodeId)
             except:
-                dumper.write(f"Error occurred while sending RPC to Node {j}")
+                pass
         print(node.votesReceived)
         if len(node.votesReceived) >= len(open_nodes) / 2:
             if time.time() < leaseStart + longestLease:
