@@ -1,1 +1,3 @@
-OpenOpen
+commitLength: 0
+Term: 0
+votedFor: None

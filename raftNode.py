@@ -57,10 +57,15 @@ class Node:
             os.mkdir(f"logs_node_{nodeId}", 0o777)
             path = os.getcwd() + f"/logs_node_{nodeId}/"
             self.f = open(path + f"logs.txt", "a+")
-            self.f1 = open(path + "metadata.txt", "a+")
+            self.f1 = open(path + "metadata.txt", "r")
             self.f2 = open(path + "dump.txt", "w+")
 
     def onCrashRecovery(self):
+        data = self.f1.read().split("\n")
+        if len(data)>1:
+            self.commitLength = int(data[0].split(" ")[1])
+            self.currentTerm = int(data[1].split(" ")[1])
+            self.votedFor = int(data[2].split(" ")[1])
         self.currentRole = "Follower"
         self.currentLeader = None
         self.votesReceived = []
@@ -68,7 +73,7 @@ class Node:
         self.ackedLength = {}
         
         for i in range(1,10):
-            self.sentLength[i] = 0;
+            self.sentLength[i] = 0
 
     def onElectionTimeout(self):
         self.currentTerm += 1
@@ -110,6 +115,7 @@ class Node:
             self.leaseAcquired = False
             return True # True Means expired
         else:
+            #self.f2.write("New Leader waiting for Old Leader Lease to timeout \n")
             return False
 
     def writelog(self):

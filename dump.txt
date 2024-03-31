@@ -1,0 +1,1 @@
+{"py/object": "raftNode.Node", "nodeId": "2", "ipAddr": "1", "port": "3", "timer": 9.424873032311256, "log": [], "f": null, "f1": null, "f2": null}
