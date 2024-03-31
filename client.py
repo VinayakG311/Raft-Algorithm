@@ -2,6 +2,7 @@ import grpc
 
 import raft_pb2
 import raft_pb2_grpc
+import sys
 
 NodeList = {1: '127.0.0.1:50051', 2: '127.0.0.1:50052', 3: '127.0.0.1:50053', 4: '127.0.0.1:50054'}
 
@@ -23,6 +24,7 @@ def run():
                     leader_addr = NodeList[int(res.LeaderID)]
         except:
             print("NO LEADER CURRENTLY")
+            sys.exit(0)
 
 
 

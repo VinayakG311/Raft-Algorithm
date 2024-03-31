@@ -1,3 +1,110 @@
 commitLength: 0
 Term: 0
-votedFor: None
+votedFor: NoneNode 3 election timer timed out, Starting election. 
+Node 3 became the leader for term 1Leader 3 sending heartbeat & Renewing Lease 
+Leader 3 sending heartbeat & Renewing Lease 
+Leader 3 sending heartbeat & Renewing Lease 
+Leader 3 sending heartbeat & Renewing Lease 
+Leader 3 sending heartbeat & Renewing Lease 
+Leader 3 sending heartbeat & Renewing Lease 
+Leader 3 sending heartbeat & Renewing Lease 
+Leader 3 sending heartbeat & Renewing Lease 
+Leader 3 sending heartbeat & Renewing Lease 
+Leader 3 sending heartbeat & Renewing Lease 
+Leader 3 sending heartbeat & Renewing Lease 
+Leader 3 sending heartbeat & Renewing Lease 
+Leader 3 sending heartbeat & Renewing Lease 
+Leader 3 sending heartbeat & Renewing Lease 
+Leader 3 sending heartbeat & Renewing Lease 
+Node 3 (follower) committed the entry NO-OP to the state machine.Node 3 accepted AppendEntries RPC from 4Node 3 (follower) committed the entry NO-OP to the state machine.Node 3 accepted AppendEntries RPC from 4Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Node 3 (follower) committed the entry NO-OP to the state machine.Node 3 accepted AppendEntries RPC from 4Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Node 3 (follower) committed the entry NO-OP to the state machine.Node 3 accepted AppendEntries RPC from 4Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Node 3 (follower) committed the entry NO-OP to the state machine.Node 3 accepted AppendEntries RPC from 4Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Node 3 (follower) committed the entry NO-OP to the state machine.Node 3 accepted AppendEntries RPC from 4Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Node 3 (follower) committed the entry NO-OP to the state machine.Node 3 accepted AppendEntries RPC from 4Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Node 3 (follower) committed the entry NO-OP to the state machine.Node 3 accepted AppendEntries RPC from 4Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Node 3 (follower) committed the entry NO-OP to the state machine.Node 3 accepted AppendEntries RPC from 4Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Node 3 (follower) committed the entry NO-OP to the state machine.Node 3 accepted AppendEntries RPC from 4Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Node 3 (follower) committed the entry NO-OP to the state machine.Node 3 accepted AppendEntries RPC from 4Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Node 3 (follower) committed the entry NO-OP to the state machine.Node 3 accepted AppendEntries RPC from 4Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Node 3 (follower) committed the entry NO-OP to the state machine.Node 3 accepted AppendEntries RPC from 4Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Node 3 (follower) committed the entry NO-OP to the state machine.Node 3 accepted AppendEntries RPC from 4Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Node 3 (follower) committed the entry NO-OP to the state machine.Node 3 accepted AppendEntries RPC from 4Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Node 3 (follower) committed the entry NO-OP to the state machine.Node 3 accepted AppendEntries RPC from 4Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Node 3 (follower) committed the entry NO-OP to the state machine.Node 3 accepted AppendEntries RPC from 4Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Node 3 (follower) committed the entry NO-OP to the state machine.Node 3 accepted AppendEntries RPC from 4Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Node 3 (follower) committed the entry NO-OP to the state machine.Node 3 accepted AppendEntries RPC from 4Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Node 3 (follower) committed the entry NO-OP to the state machine.Node 3 accepted AppendEntries RPC from 4Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Node 3 (follower) committed the entry NO-OP to the state machine.Node 3 accepted AppendEntries RPC from 4Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Node 3 (follower) committed the entry NO-OP to the state machine.Node 3 accepted AppendEntries RPC from 4Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Node 3 (follower) committed the entry NO-OP to the state machine.Node 3 accepted AppendEntries RPC from 4Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Node 3 (follower) committed the entry NO-OP to the state machine.Node 3 accepted AppendEntries RPC from 4Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Node 3 (follower) committed the entry NO-OP to the state machine.Node 3 accepted AppendEntries RPC from 4Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Node 3 (follower) committed the entry NO-OP to the state machine.Node 3 accepted AppendEntries RPC from 4Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Node 3 (follower) committed the entry NO-OP to the state machine.Node 3 accepted AppendEntries RPC from 4Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Node 3 (follower) committed the entry NO-OP to the state machine.Node 3 accepted AppendEntries RPC from 4Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Node 3 (follower) committed the entry NO-OP to the state machine.Node 3 accepted AppendEntries RPC from 4Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Node 3 (follower) committed the entry NO-OP to the state machine.Node 3 accepted AppendEntries RPC from 4Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Node 3 (follower) committed the entry NO-OP to the state machine.Node 3 accepted AppendEntries RPC from 4Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
+Leader 4 sending heartbeat & Renewing Lease 
