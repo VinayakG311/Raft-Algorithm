@@ -21,8 +21,8 @@ leader = False
 
 node: Node = Node(nodeId=int(nodeId), ip=ip, port=port)
 dumper = open(f"logs_node_{nodeId}/dump.txt","a")
-open_nodes = {}
-all_ip = {'127.0.0.1:50051': 1, '127.0.0.1:50052': 2, '127.0.0.1:50053': 3, '127.0.0.1:50054': 4}
+open_nodes = {1:'127.0.0.1:50051', 2:'127.0.0.1:50052',3:'127.0.0.1:50053', 4:'127.0.0.1:50054'}
+# all_ip = {'127.0.0.1:50051': 1, '127.0.0.1:50052': 2, '127.0.0.1:50053': 3, '127.0.0.1:50054': 4}
 
 
 def reWrite():
@@ -38,30 +38,30 @@ def reWrite():
     sys.exit(0)
 
 
-def NodeDetector():
-    try:
-        # time.sleep(4)
+# def NodeDetector():
+#     try:
+#         # time.sleep(4)
 
-        while True:
-            ip_exist = []
-            f = open("nodes.txt", "r")
-            nodes = f.read().split("\n")
-            f.close()
-            for i in nodes:
-                k = i.split(" ")
-                ip_exist.append(k[0])
-                if k == ['']:
-                    continue
-                if int(k[1]) not in open_nodes:
-                    open_nodes[int(k[1])] = k[0]
-                    print(open_nodes)
-            for k, v in all_ip.items():
-                if k not in ip_exist and v in open_nodes.keys():
-                    del open_nodes[v]
+#         while True:
+#             ip_exist = []
+#             f = open("nodes.txt", "r")
+#             nodes = f.read().split("\n")
+#             f.close()
+#             for i in nodes:
+#                 k = i.split(" ")
+#                 ip_exist.append(k[0])
+#                 if k == ['']:
+#                     continue
+#                 if int(k[1]) not in open_nodes:
+#                     open_nodes[int(k[1])] = k[0]
+#                     print(open_nodes)
+#             for k, v in all_ip.items():
+#                 if k not in ip_exist and v in open_nodes.keys():
+#                     del open_nodes[v]
 
-    except KeyboardInterrupt:
-        reWrite()
-        return
+#     except KeyboardInterrupt:
+#         reWrite()
+#         return
 
 
 def checkLease():
@@ -83,7 +83,7 @@ def checkLease():
 
                     # Replicating logs
 
-                    node.sentLength[j] = 0
+                    node.sentLength[j] = len(node.log)
                     node.ackedLength[j] = 0
                     req1 = [node.nodeId, open_nodes[node.nodeId], j, i]
                     # print(req1)
@@ -144,14 +144,17 @@ def ReplicateLogs(req, heartbeat):
 
     # request = raft_pb2.AppendEntriesArgs()
     dumper.write(f"Leader {node.currentLeader} sending heartbeat & Renewing Lease \n")
-    with grpc.insecure_channel(req[3]) as channel:
-        stub = raft_pb2_grpc.RaftStub(channel)
-        request = raft_pb2.ReplicateLogRequestArgs(leaderId=node.nodeId, currentTerm=node.currentTerm,
-                                                   prefixLen=prefix, prefixTerm=prefixTerm,
-                                                   commitLength=node.commitLength, suffix=suffix, heartBeat=heartbeat)
-        res = stub.ReplicateLogRequest(request)
+    try:
+        with grpc.insecure_channel(req[3]) as channel:
+            stub = raft_pb2_grpc.RaftStub(channel)
+            request = raft_pb2.ReplicateLogRequestArgs(leaderId=node.nodeId, currentTerm=node.currentTerm,
+                                                    prefixLen=prefix, prefixTerm=prefixTerm,
+                                                    commitLength=node.commitLength, suffix=suffix, heartBeat=heartbeat)
+            res = stub.ReplicateLogRequest(request)
 
-        # print(res)
+            # print(res)
+    except:
+        pass
 
 
 def sendHeartbeat():
@@ -200,63 +203,69 @@ def StartElection():
         node.startTimer()
 
         print("SENDING VOTE REQUESTS")
-        for j, i in open_nodes.items():
-            if i == node.ipAddr + ":" + node.port:
+        for k, l in open_nodes.items():
+            if l == node.ipAddr + ":" + node.port:
                 continue
-            with grpc.insecure_channel(i) as channel:
-                stub = raft_pb2_grpc.RaftStub(channel)
-                request = raft_pb2.RequestVotesArgs(term=node.currentTerm, candidateId=node.nodeId,
-                                                    lastLogTerm=node.lastTerm,
-                                                    lastLogIndex=node.lastIndex)
-                response = stub.RequestVote(request)
+            try:
+                with grpc.insecure_channel(l) as channel:
+                    stub = raft_pb2_grpc.RaftStub(channel)
+                    request = raft_pb2.RequestVotesArgs(term=node.currentTerm, candidateId=node.nodeId,
+                                                        lastLogTerm=node.lastTerm,
+                                                        lastLogIndex=node.lastIndex)
+                    response = stub.RequestVote(request)
 
-                if response.longestDurationRem > longestLease:
-                    longestLease = response.longestDurationRem
-                    leaseStart = time.time()
+                    if response.longestDurationRem > longestLease:
+                        longestLease = response.longestDurationRem
+                        leaseStart = time.time()
 
-                if response.voteGranted == True and node.currentRole == "Candidate" and node.currentTerm == response.term:
-                    node.votesReceived.append(response.NodeId)
-        print(node.votesReceived)
-        if len(node.votesReceived) >= len(open_nodes) / 2:
+                    if response.voteGranted == True and node.currentRole == "Candidate" and node.currentTerm == response.term:
+                        node.votesReceived.append(response.NodeId)
+                        print(node.votesReceived)
+                        if len(node.votesReceived) >= (len(open_nodes)+1) / 2:
 
-            while time.time() < leaseStart + longestLease:
-                time.sleep(0.5)
-            node.acquireLease()
+                            while time.time() < leaseStart + longestLease:
+                                time.sleep(0.5)
+                            node.acquireLease()
 
-            dumper.write(f"Node {node.nodeId} became the leader for term {node.currentTerm}")
-            print(node.votesReceived)
-            print("Leader")
-            node.currentRole = "Leader"
-            node.currentLeader = node.nodeId
-            node.isLeader = True
-            node.leaderId = node.nodeId
-            entry = LogEntry(node.lastTerm, node.lastIndex + 1, "NO-OP", "")
-            node.log.append(entry)
+                            dumper.write(f"Node {node.nodeId} became the leader for term {node.currentTerm}")
+                            print(node.votesReceived)
+                            print("Leader")
+                            node.currentRole = "Leader"
+                            node.currentLeader = node.nodeId
+                            node.isLeader = True
+                            node.leaderId = node.nodeId
+                            entry = LogEntry(node.lastTerm, node.lastIndex + 1, "NO-OP", "")
+                            node.log.append(entry)
 
-            for j, i in open_nodes.items():
+                            for j, i in open_nodes.items():
 
-                if i == node.ipAddr +":"+node.port:
+                                if i == node.ipAddr +":"+node.port:
+                                    
+                                    continue
 
-                    continue
+                                # Replicating logs
 
-                # Replicating logs
+                                node.sentLength[j] = len(node.log)
+                                node.ackedLength[j] = 0
+                                req1 = [node.nodeId, open_nodes[node.nodeId], j, i]
+                                print(req1)
+                                # SendBroadcast(entry)
 
-                node.sentLength[j] = 0
-                node.ackedLength[j] = 0
-                req1 = [node.nodeId, open_nodes[node.nodeId], j, i]
-                print(req1)
-                # SendBroadcast(entry)
+                                ReplicateLogs(req1, False)
+                            return
 
-                ReplicateLogs(req1, False)
-
-        else:
-            print("Follower")
-            if response.term >= node.currentTerm:
-                dumper.write(f"{node.nodeId} Stepping down")
-                node.currentTerm = response.term
-                node.currentRole = "Follower"
-                node.votedFor = None
-                node.cancelTimer()
+                    elif(response.term >= node.currentTerm):
+                        # print("Follower")
+                        # if response.term >= node.currentTerm:
+                        dumper.write(f"{node.nodeId} Stepping down")
+                        node.currentTerm = response.term
+                        node.currentRole = "Follower"
+                        node.votedFor = None
+                        node.cancelTimer()
+                        return
+            except Exception as e:
+                print(f"ERROR NODE {k} {e}")
+                pass
 
 
 def SuspectFail():
@@ -409,24 +418,31 @@ class RaftServicer(raft_pb2_grpc.RaftServicer):
             res = self.AppendEntries(req, context)
             ack = request.prefixLen + len(request.suffix)
             dumper.write(f"Node {node.nodeId} accepted AppendEntries RPC from {node.currentLeader}")
-            with grpc.insecure_channel(open_nodes[node.currentLeader]) as channel:
-                stub = raft_pb2_grpc.RaftStub(channel)
+            try:
+                with grpc.insecure_channel(open_nodes[node.currentLeader]) as channel:
+                    stub = raft_pb2_grpc.RaftStub(channel)
 
-                req = raft_pb2.ReplicateLogResponseArgs(followerId=node.nodeId, followerTerm=node.currentTerm, ack=ack,
-                                                        success=True)
-                res = stub.ReplicateLogResponse(req)
+                    req = raft_pb2.ReplicateLogResponseArgs(followerId=node.nodeId, followerTerm=node.currentTerm, ack=ack,
+                                                            success=True)
+                    res = stub.ReplicateLogResponse(req)
+            except:
+                pass
                 # print(res)
             # Send Ack to leader of success
         else:
             # Send Ack to leader of failure
             dumper.write(f"Node {node.nodeId} rejected AppendEntries RPC from {node.currentLeader}")
-            with grpc.insecure_channel(open_nodes[node.leaderId]) as channel:
-                stub = raft_pb2_grpc.RaftStub(channel)
-                req = raft_pb2.ReplicateLogResponseArgs(followerId=node.nodeId, followerTerm=node.currentTerm, ack=0,
-                                                        success=False)
-                res = stub.ReplicateLogResponse(req)
-        return raft_pb2.ReplicateLogRequestRes(nodeId=node.nodeId, currentTerm=node.currentTerm, ackLen=0,
+            try:
+                with grpc.insecure_channel(open_nodes[node.leaderId]) as channel:
+                    stub = raft_pb2_grpc.RaftStub(channel)
+                    req = raft_pb2.ReplicateLogResponseArgs(followerId=node.nodeId, followerTerm=node.currentTerm, ack=0,
+                                                            success=False)
+                    res = stub.ReplicateLogResponse(req)
+                return raft_pb2.ReplicateLogRequestRes(nodeId=node.nodeId, currentTerm=node.currentTerm, ackLen=0,
                                                receivedMessage=True)
+            except:
+                pass
+        
 
     def ReplicateLogResponse(self, request, context):
         if node.currentTerm == request.followerTerm and node.currentRole == "Leader":
@@ -508,12 +524,12 @@ if __name__ == '__main__':
             node.onCrashRecovery()
     th1 = threading.Thread(target=serve)
     th2 = threading.Thread(target=checkLease)
-    th3 = threading.Thread(target=NodeDetector)
+    # th3 = threading.Thread(target=NodeDetector)
     th4 = threading.Thread(target=sendHeartbeat)
     th5 = threading.Thread(target=metadatawriter)
     t.append(th1)
     t.append(th2)
-    t.append(th3)
+    # t.append(th3)
     t.append(th4)
     t.append(th5)
 
