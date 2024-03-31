@@ -154,7 +154,7 @@ def ReplicateLogs(req, heartbeat):
 
             # print(res)
     except:
-        pass
+        dumper.write(f"Error occurred while sending RPC to Node {req[3]}")
 
 
 def sendHeartbeat():
@@ -168,7 +168,7 @@ def sendHeartbeat():
                     if i == node.ipAddr + ":" + node.port:
                         continue
                     req1 = [node.nodeId, open_nodes[node.nodeId], j, i]
-                    print(req1)
+
                     ReplicateLogs(req1, True)
 
     except KeyboardInterrupt:
@@ -188,6 +188,7 @@ def StartElection():
     node.startTimer()
     # print("TRYING ELECTIONS ..")
     # node.acquireLease()
+    print(node.timer)
     if ((node.checkTimeout())):
         dumper.write(f"Node {node.nodeId} election timer timed out, Starting election. \n")
         longestLease = 0
@@ -203,11 +204,11 @@ def StartElection():
         node.startTimer()
 
         print("SENDING VOTE REQUESTS")
-        for k, l in open_nodes.items():
-            if l == node.ipAddr + ":" + node.port:
+        for j, i in open_nodes.items():
+            if i == node.ipAddr + ":" + node.port:
                 continue
             try:
-                with grpc.insecure_channel(l) as channel:
+                with grpc.insecure_channel(i) as channel:
                     stub = raft_pb2_grpc.RaftStub(channel)
                     request = raft_pb2.RequestVotesArgs(term=node.currentTerm, candidateId=node.nodeId,
                                                         lastLogTerm=node.lastTerm,
@@ -220,52 +221,114 @@ def StartElection():
 
                     if response.voteGranted == True and node.currentRole == "Candidate" and node.currentTerm == response.term:
                         node.votesReceived.append(response.NodeId)
-                        print(node.votesReceived)
-                        if len(node.votesReceived) >= (len(open_nodes)+1) / 2:
+            except:
+                dumper.write(f"Error occurred while sending RPC to Node {j}")
+        print(node.votesReceived)
+        if len(node.votesReceived) >= len(open_nodes) / 2:
+            if time.time() < leaseStart + longestLease:
+                dumper.write("New Leader waiting for Old Leader Lease to timeout")
+            while time.time() < leaseStart + longestLease:
 
-                            while time.time() < leaseStart + longestLease:
-                                time.sleep(0.5)
-                            node.acquireLease()
+                time.sleep(0.5)
+            node.acquireLease()
 
-                            dumper.write(f"Node {node.nodeId} became the leader for term {node.currentTerm}")
-                            print(node.votesReceived)
-                            print("Leader")
-                            node.currentRole = "Leader"
-                            node.currentLeader = node.nodeId
-                            node.isLeader = True
-                            node.leaderId = node.nodeId
-                            entry = LogEntry(node.lastTerm, node.lastIndex + 1, "NO-OP", "")
-                            node.log.append(entry)
+            dumper.write(f"Node {node.nodeId} became the leader for term {node.currentTerm} \n")
+            print(node.votesReceived)
+            print("Leader")
+            node.currentRole = "Leader"
+            node.currentLeader = node.nodeId
+            node.isLeader = True
+            node.leaderId = node.nodeId
+            entry = LogEntry(node.lastTerm, node.lastIndex + 1, "NO-OP", "")
+            node.log.append(entry)
 
-                            for j, i in open_nodes.items():
+            for j, i in open_nodes.items():
 
-                                if i == node.ipAddr +":"+node.port:
-                                    
-                                    continue
+                if i == node.ipAddr +":"+node.port:
 
-                                # Replicating logs
+                    continue
 
-                                node.sentLength[j] = len(node.log)
-                                node.ackedLength[j] = 0
-                                req1 = [node.nodeId, open_nodes[node.nodeId], j, i]
-                                print(req1)
-                                # SendBroadcast(entry)
+                # Replicating logs
 
-                                ReplicateLogs(req1, False)
-                            return
+                node.sentLength[j] = 0
+                node.ackedLength[j] = 0
+                req1 = [node.nodeId, open_nodes[node.nodeId], j, i]
+                print(req1)
+                # SendBroadcast(entry)
 
-                    elif(response.term >= node.currentTerm):
-                        # print("Follower")
-                        # if response.term >= node.currentTerm:
-                        dumper.write(f"{node.nodeId} Stepping down")
-                        node.currentTerm = response.term
-                        node.currentRole = "Follower"
-                        node.votedFor = None
-                        node.cancelTimer()
-                        return
-            except Exception as e:
-                print(f"ERROR NODE {k} {e}")
-                pass
+                ReplicateLogs(req1, False)
+
+        else:
+            print("Follower")
+            if response.term >= node.currentTerm:
+                dumper.write(f"{node.nodeId} Stepping down \n")
+                node.currentTerm = response.term
+                node.currentRole = "Follower"
+                node.votedFor = None
+                node.cancelTimer()
+        # for k, l in open_nodes.items():
+        #     if l == node.ipAddr + ":" + node.port:
+        #         continue
+        #     try:
+        #         with grpc.insecure_channel(l) as channel:
+        #             stub = raft_pb2_grpc.RaftStub(channel)
+        #             request = raft_pb2.RequestVotesArgs(term=node.currentTerm, candidateId=node.nodeId,
+        #                                                 lastLogTerm=node.lastTerm,
+        #                                                 lastLogIndex=node.lastIndex)
+        #             response = stub.RequestVote(request)
+        #
+        #             if response.longestDurationRem > longestLease:
+        #                 longestLease = response.longestDurationRem
+        #                 leaseStart = time.time()
+        #
+        #             if response.voteGranted == True and node.currentRole == "Candidate" and node.currentTerm == response.term:
+        #                 node.votesReceived.append(response.NodeId)
+        #                 print(node.votesReceived)
+        #                 if len(node.votesReceived) >= (len(open_nodes)+1) / 2:
+        #
+        #                     while time.time() < leaseStart + longestLease:
+        #                         time.sleep(0.5)
+        #                     node.acquireLease()
+        #
+        #                     dumper.write(f"Node {node.nodeId} became the leader for term {node.currentTerm}")
+        #                     print(node.votesReceived)
+        #                     print("Leader")
+        #                     node.currentRole = "Leader"
+        #                     node.currentLeader = node.nodeId
+        #                     node.isLeader = True
+        #                     node.leaderId = node.nodeId
+        #                     entry = LogEntry(node.lastTerm, node.lastIndex + 1, "NO-OP", "")
+        #                     node.log.append(entry)
+        #
+        #                     for j, i in open_nodes.items():
+        #
+        #                         if i == node.ipAddr +":"+node.port:
+        #
+        #                             continue
+        #
+        #                         # Replicating logs
+        #
+        #                         node.sentLength[j] = len(node.log)
+        #                         node.ackedLength[j] = 0
+        #                         req1 = [node.nodeId, open_nodes[node.nodeId], j, i]
+        #                         print(req1)
+        #                         # SendBroadcast(entry)
+        #
+        #                         ReplicateLogs(req1, False)
+        #                     return
+        #
+        #             elif(response.term >= node.currentTerm):
+        #                 # print("Follower")
+        #                 # if response.term >= node.currentTerm:
+        #                 dumper.write(f"{node.nodeId} Stepping down")
+        #                 node.currentTerm = response.term
+        #                 node.currentRole = "Follower"
+        #                 node.votedFor = None
+        #                 node.cancelTimer()
+        #                 return
+        #     except Exception as e:
+        #         print(f"ERROR NODE {k} {e}")
+        #         pass
 
 
 def SuspectFail():
@@ -323,9 +386,10 @@ class RaftServicer(raft_pb2_grpc.RaftServicer):
                 request.lastLogTerm == node.lastTerm and request.lastLogIndex >= len(node.log))
 
         vote = True
-
+        print("before:",node.votedFor)
         if request.term == node.currentTerm and ok and (node.votedFor is None or node.votedFor == request.candidateId):
             node.votedFor = request.candidateId
+            print("after:",node.votedFor)
             dumper.write(f"Vote granted for Node {node.votedFor} in term {node.currentTerm}")
             node.val = True
             # node.leaderId = request.candidateId
@@ -542,13 +606,7 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         if node.isLeader:
             dumper.write(f"Leader {node.currentLeader} lease renewal failed. Stepping Down")
-
+        dumper.close()
         reWrite()
 
 
-"""Left:
-Error occurred while sending RPC to Node {followerNodeID} 
-
-Doubt: New Leader waiting for Old Leader Lease to timeout
-
-"""

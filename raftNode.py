@@ -41,7 +41,7 @@ class Node:
         self.log = []
 
         for i in range(1,10):
-            self.sentLength[i] = 0;
+            self.sentLength[i] = 0
 
 
         if os.path.isdir(f"logs_node_{nodeId}"):
