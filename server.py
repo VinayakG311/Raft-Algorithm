@@ -20,7 +20,7 @@ ip = socket.gethostbyname(socket.gethostname())
 leader = False
 
 node: Node = Node(nodeId=int(nodeId), ip=ip, port=port)
-
+dumper = open(f"logs_node_{nodeId}/dump.txt","a")
 open_nodes = {}
 all_ip = {'127.0.0.1:50051': 1, '127.0.0.1:50052': 2, '127.0.0.1:50053': 3, '127.0.0.1:50054': 4}
 
@@ -73,12 +73,12 @@ def checkLease():
                 node.currentLeader = node.nodeId
                 node.isLeader = True
                 node.leaderId = node.nodeId
-                node.currentTerm+=1
+
                 entry = LogEntry(node.lastTerm, node.lastIndex + 1, "NO-OP", "")
                 node.log.append(entry)
 
                 for j, i in open_nodes.items():
-                    if i == Node.ipAddr + Node.port:
+                    if i == node.ipAddr + ":"+node.port:
                         continue
 
                     # Replicating logs
@@ -143,7 +143,7 @@ def ReplicateLogs(req, heartbeat):
         prefixTerm = node.log[prefix - 1].term
 
     # request = raft_pb2.AppendEntriesArgs()
-    node.f2.write(f"Leader {node.currentLeader} sending heartbeat & Renewing Lease \n")
+    dumper.write(f"Leader {node.currentLeader} sending heartbeat & Renewing Lease \n")
     with grpc.insecure_channel(req[3]) as channel:
         stub = raft_pb2_grpc.RaftStub(channel)
         request = raft_pb2.ReplicateLogRequestArgs(leaderId=node.nodeId, currentTerm=node.currentTerm,
@@ -165,7 +165,7 @@ def sendHeartbeat():
                     if i == node.ipAddr + ":" + node.port:
                         continue
                     req1 = [node.nodeId, open_nodes[node.nodeId], j, i]
-
+                    print(req1)
                     ReplicateLogs(req1, True)
 
     except KeyboardInterrupt:
@@ -186,7 +186,7 @@ def StartElection():
     # print("TRYING ELECTIONS ..")
     # node.acquireLease()
     if ((node.checkTimeout())):
-        node.f2.write(f"Node {node.nodeId} election timer timed out, Starting election. \n")
+        dumper.write(f"Node {node.nodeId} election timer timed out, Starting election. \n")
         longestLease = 0
         leaseStart = 0
 
@@ -223,7 +223,7 @@ def StartElection():
                 time.sleep(0.5)
             node.acquireLease()
 
-            node.f2.write(f"Node {node.nodeId} became the leader for term {node.currentTerm}")
+            dumper.write(f"Node {node.nodeId} became the leader for term {node.currentTerm}")
             print(node.votesReceived)
             print("Leader")
             node.currentRole = "Leader"
@@ -235,7 +235,8 @@ def StartElection():
 
             for j, i in open_nodes.items():
 
-                if i == node.ipAddr + node.port:
+                if i == node.ipAddr +":"+node.port:
+
                     continue
 
                 # Replicating logs
@@ -243,7 +244,7 @@ def StartElection():
                 node.sentLength[j] = 0
                 node.ackedLength[j] = 0
                 req1 = [node.nodeId, open_nodes[node.nodeId], j, i]
-                # print(req1)
+                print(req1)
                 # SendBroadcast(entry)
 
                 ReplicateLogs(req1, False)
@@ -251,7 +252,7 @@ def StartElection():
         else:
             print("Follower")
             if response.term >= node.currentTerm:
-                node.f2.write(f"{node.nodeId} Stepping down")
+                dumper.write(f"{node.nodeId} Stepping down")
                 node.currentTerm = response.term
                 node.currentRole = "Follower"
                 node.votedFor = None
@@ -294,9 +295,9 @@ class RaftServicer(raft_pb2_grpc.RaftServicer):
                 data= f"SET {i.key} {i.value} {i.term}"
                 f.write(f"SET {i.key} {i.value} {i.term} \n")
             if node.nodeId==node.currentLeader:
-                node.f2.write(f"Node {node.nodeId} (leader) committed the entry {data} to the state machine.")
+                dumper.write(f"Node {node.nodeId} (leader) committed the entry {data} to the state machine.")
             else:
-                node.f2.write(f"Node {node.nodeId} (follower) committed the entry {data} to the state machine.")
+                dumper.write(f"Node {node.nodeId} (follower) committed the entry {data} to the state machine.")
         # return super().AppendEntries(request, context)
 
     def RequestVote(self, request, context):
@@ -316,13 +317,13 @@ class RaftServicer(raft_pb2_grpc.RaftServicer):
 
         if request.term == node.currentTerm and ok and (node.votedFor is None or node.votedFor == request.candidateId):
             node.votedFor = request.candidateId
-            node.f2.write(f"Vote granted for Node {node.votedFor} in term {node.currentTerm}")
+            dumper.write(f"Vote granted for Node {node.votedFor} in term {node.currentTerm}")
             node.val = True
             # node.leaderId = request.candidateId
             print("VOTED ..")
 
         else:
-            node.f2.write(f"Vote denied for Node {node.votedFor} in term {node.currentTerm}")
+            dumper.write(f"Vote denied for Node {node.votedFor} in term {node.currentTerm}")
             vote = False
         longestLease = 0
         if node.leaseStartTime > 0:
@@ -344,7 +345,7 @@ class RaftServicer(raft_pb2_grpc.RaftServicer):
             print("Not leader ....")
             return raft_pb2.ServeClientReply(Data=str(data), LeaderID=str(node.currentLeader), Success=False)
         else:
-            node.f2.write(f"Node {node.currentLeader} (leader) received an {operation} request")
+            dumper.write(f"Node {node.currentLeader} (leader) received an {operation} request")
             if operation == "SET":
                 key = req[1]
                 value = req[2]
@@ -369,7 +370,7 @@ class RaftServicer(raft_pb2_grpc.RaftServicer):
                 node.log.append(entry)
                 # SendBroadcast(entry)
             for j, i in open_nodes.items():
-                if i == Node.ipAddr + Node.port:
+                if i == node.ipAddr +":"+node.port:
                     continue
 
                 # Replicating logs
@@ -407,7 +408,7 @@ class RaftServicer(raft_pb2_grpc.RaftServicer):
                                              prefixLen=request.prefixLen, heartBeat=request.heartBeat)
             res = self.AppendEntries(req, context)
             ack = request.prefixLen + len(request.suffix)
-            node.f2.write(f"Node {node.nodeId} accepted AppendEntries RPC from {node.currentLeader}")
+            dumper.write(f"Node {node.nodeId} accepted AppendEntries RPC from {node.currentLeader}")
             with grpc.insecure_channel(open_nodes[node.currentLeader]) as channel:
                 stub = raft_pb2_grpc.RaftStub(channel)
 
@@ -418,7 +419,7 @@ class RaftServicer(raft_pb2_grpc.RaftServicer):
             # Send Ack to leader of success
         else:
             # Send Ack to leader of failure
-            node.f2.write(f"Node {node.nodeId} rejected AppendEntries RPC from {node.currentLeader}")
+            dumper.write(f"Node {node.nodeId} rejected AppendEntries RPC from {node.currentLeader}")
             with grpc.insecure_channel(open_nodes[node.leaderId]) as channel:
                 stub = raft_pb2_grpc.RaftStub(channel)
                 req = raft_pb2.ReplicateLogResponseArgs(followerId=node.nodeId, followerTerm=node.currentTerm, ack=0,
@@ -524,7 +525,7 @@ if __name__ == '__main__':
 
     except KeyboardInterrupt:
         if node.isLeader:
-            node.f2.write(f"Leader {node.currentLeader} lease renewal failed. Stepping Down")
+            dumper.write(f"Leader {node.currentLeader} lease renewal failed. Stepping Down")
 
         reWrite()
 
