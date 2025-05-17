@@ -1,5 +1,5 @@
 
-# Raft_Algorithm
+# Raft Algorithm
 
 This project is a Python-based implementation of the Raft consensus algorithm, designed to manage a replicated log across distributed systems. It utilizes gRPC for inter-node communication, simulating a cluster of nodes that maintain consistency through leader election, log replication, and fault tolerance.
 
